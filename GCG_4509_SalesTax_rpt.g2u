@@ -1,0 +1,68 @@
+Program.Sub.Preflight.Start
+
+Program.Sub.Preflight.End
+
+Program.Sub.Main.Start
+F.Intrinsic.Control.SetErrorHandler("Main_Err")
+F.Intrinsic.Control.ClearErrors
+V.Local.sError.Declare(String)
+
+F.ODBC.connection!con.OpenConnection(V.Ambient.PDSN,V.Ambient.PUser,V.Ambient.PPass, 10000000)
+Function.Intrinsic.Control.If(V.Caller.Hook, =, 16090)
+	Function.Intrinsic.Control.CallSub(savetable)
+Function.Intrinsic.Control.EndIf
+Function.Intrinsic.Control.CallSub(unload)
+
+F.Intrinsic.Control.ExitSub
+F.Intrinsic.Control.Label("Main_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	Function.Intrinsic.String.Concat("Project: GCG_4509_SalesTax_rpt.g2u",V.Ambient.Newline,V.Ambient.Newline,"Subroutine: ",V.Ambient.CurrentSubroutine,V.Ambient.NewLine,"Error Occurred ",V.Ambient.ErrorNumber," with description ",V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	Function.Intrinsic.Control.CallSub(unload)
+Function.Intrinsic.Control.EndIf
+Program.Sub.Main.End
+
+Program.Sub.Unload.Start
+F.Intrinsic.Control.SetErrorHandler("Unload_Err")
+F.Intrinsic.Control.ClearErrors
+V.Local.sError.Declare(String)
+
+F.ODBC.Connection!con.Close
+F.Intrinsic.Control.End
+
+F.Intrinsic.Control.ExitSub
+F.Intrinsic.Control.Label("Unload_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	Function.Intrinsic.String.Concat("Project: GCG_4509_SalesTax_rpt.g2u",V.Ambient.Newline,V.Ambient.Newline,"Subroutine: ",V.Ambient.CurrentSubroutine,V.Ambient.NewLine,"Error Occurred ",V.Ambient.ErrorNumber," with description ",V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	Function.Intrinsic.Control.End
+
+Function.Intrinsic.Control.EndIf
+Program.Sub.Unload.End
+
+Program.Sub.SaveTable.Start
+F.Intrinsic.Control.SetErrorHandler("SaveTable_Err")
+F.Intrinsic.Control.ClearErrors
+V.Local.sError.Declare(String)
+
+'delete table
+Function.ODBC.Connection!con.Execute("Delete From GCG_4509_SalesTax")
+'create dataTable
+F.Data.DataTable.CreateFromSQL("CUST", "con", "Select V_ORDER_HIST_HEAD.Customer, V_ORDER_HIST_HEAD.Invoice, V_CUSTOMER_MASTER.Name_Customer As Name From V_ORDER_HIST_HEAD Left Join  V_CUSTOMER_MASTER On V_CUSTOMER_MASTER.CUSTOMER = V_ORDER_HIST_HEAD.CUSTOMER")
+'drop column
+F.Data.DataTable.RemoveColumn("CUST", "Customer")
+'save to GCG_4509_SalesTax
+F.Data.DataTable.SaveToDB("CUST", "con", "GCG_4509_SalesTax", "",128)
+
+F.Intrinsic.Control.ExitSub
+F.Intrinsic.Control.Label("SaveTable_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	Function.Intrinsic.String.Concat("Project: GCG_4509_SalesTax_rpt.g2u",V.Ambient.Newline,V.Ambient.Newline,"Subroutine: ",V.Ambient.CurrentSubroutine,V.Ambient.NewLine,"Error Occurred ",V.Ambient.ErrorNumber," with description ",V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	Function.Intrinsic.Control.CallSub(unload)
+Function.Intrinsic.Control.EndIf
+Program.Sub.SaveTable.End
+
+Program.Sub.Comments.Start
+${$0$}$$}$DH1$}$4/17/2017 1:01:24 PM$}$True
+Program.Sub.Comments.End
